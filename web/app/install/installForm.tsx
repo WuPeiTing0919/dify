@@ -27,9 +27,13 @@ const accountFormSchema = z.object({
     .min(1, { message: 'login.error.emailInValid' })
     .email('login.error.emailInValid'),
   name: z.string().min(1, { message: 'login.error.nameEmpty' }),
-  password: z.string().min(8, {
-    message: 'login.error.passwordLengthInValid',
-  }).regex(validPassword, 'login.error.passwordInvalid'),
+  department: z.string().optional(),
+  password: z
+    .string()
+    .min(8, {
+      message: 'login.error.passwordLengthInValid',
+    })
+    .regex(validPassword, 'login.error.passwordInvalid'),
 })
 
 type AccountFormValues = z.infer<typeof accountFormSchema>
@@ -51,13 +55,16 @@ const InstallForm = () => {
       name: '',
       password: '',
       email: '',
+      department: '',
     },
   })
 
   const onSubmit: SubmitHandler<AccountFormValues> = async (data) => {
+    const { department, ...rest } = data
     await setup({
       body: {
-        ...data,
+        ...rest,
+        ...(department ? { department } : {}),
       },
     })
     router.push('/signin')
@@ -134,6 +141,19 @@ const InstallForm = () => {
                   />
                 </div>
                 {errors.name && <span className='text-sm text-red-400'>{t(`${errors.name.message}`)}</span>}
+              </div>
+
+              <div className='mb-5'>
+                <label htmlFor="department" className="my-2 flex items-center justify-between text-sm font-medium text-text-primary">
+                  {t('login.department')}
+                </label>
+                <div className="relative mt-1 rounded-md shadow-sm">
+                  <input
+                    {...register('department')}
+                    placeholder={t('login.departmentPlaceholder') || ''}
+                    className={'w-full appearance-none rounded-md border border-transparent bg-components-input-bg-normal py-[7px] pl-2 text-components-input-text-filled caret-primary-600 outline-none placeholder:text-components-input-text-placeholder hover:border-components-input-border-hover hover:bg-components-input-bg-hover focus:border-components-input-border-active focus:bg-components-input-bg-active focus:shadow-xs'}
+                  />
+                </div>
               </div>
 
               <div className='mb-5'>
