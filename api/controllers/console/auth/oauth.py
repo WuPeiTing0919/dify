@@ -114,7 +114,7 @@ class OAuthCallback(Resource):
             db.session.commit()
 
         try:
-            TenantService.create_owner_tenant_if_not_exist(account)
+            TenantService.create_owner_tenant_if_not_exist(account, department=None)
         except Unauthorized:
             return redirect(f"{dify_config.CONSOLE_WEB_URL}/signin?message=Workspace not found.")
         except WorkSpaceNotAllowedCreateError:
@@ -163,7 +163,12 @@ def _generate_account(provider: str, user_info: OAuthUserInfo):
             raise AccountNotFoundError()
         account_name = user_info.name or "Dify"
         account = RegisterService.register(
-            email=user_info.email, name=account_name, password=None, open_id=user_info.id, provider=provider
+            email=user_info.email,
+            name=account_name,
+            password=None,
+            open_id=user_info.id,
+            provider=provider,
+            department=None,
         )
 
         # Set interface language
