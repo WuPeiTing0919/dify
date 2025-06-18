@@ -25,6 +25,7 @@ export default function InviteSettingsPage() {
   const token = decodeURIComponent(searchParams.get('invite_token') as string)
   const { setLocaleOnClient } = useContext(I18n)
   const [name, setName] = useState('')
+  const [department, setDepartment] = useState('')
   const [language, setLanguage] = useState(LanguagesSupported[0])
   const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Los_Angeles')
 
@@ -49,6 +50,7 @@ export default function InviteSettingsPage() {
         body: {
           token,
           name,
+          ...(department ? { department } : {}),
           interface_language: language,
           timezone,
         },
@@ -63,7 +65,7 @@ export default function InviteSettingsPage() {
     catch {
       recheck()
     }
-  }, [language, name, recheck, setLocaleOnClient, timezone, token, router, t])
+  }, [language, name, department, recheck, setLocaleOnClient, timezone, token, router, t])
 
   if (!checkRes)
     return <Loading />
@@ -101,6 +103,21 @@ export default function InviteSettingsPage() {
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder={t('login.namePlaceholder') || ''}
+          />
+        </div>
+      </div>
+
+      <div className='mb-5'>
+        <label htmlFor="department" className="system-md-semibold my-2">
+          {t('login.department')}
+        </label>
+        <div className="mt-1">
+          <Input
+            id="department"
+            type="text"
+            value={department}
+            onChange={e => setDepartment(e.target.value)}
+            placeholder={t('login.departmentPlaceholder') || ''}
           />
         </div>
       </div>

@@ -94,6 +94,7 @@ class App(Base):
     is_demo = db.Column(db.Boolean, nullable=False, server_default=db.text("false"))
     is_public = db.Column(db.Boolean, nullable=False, server_default=db.text("false"))
     is_universal = db.Column(db.Boolean, nullable=False, server_default=db.text("false"))
+    department = db.Column(db.String(255), nullable=True)
     tracing = db.Column(db.Text, nullable=True)
     max_active_requests: Mapped[Optional[int]] = mapped_column(nullable=True)
     created_by = db.Column(StringUUID, nullable=True)

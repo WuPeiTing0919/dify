@@ -40,11 +40,16 @@ class SetupApi(Resource):
         parser.add_argument("email", type=email, required=True, location="json")
         parser.add_argument("name", type=StrLen(30), required=True, location="json")
         parser.add_argument("password", type=valid_password, required=True, location="json")
+        parser.add_argument("department", type=str, required=False, location="json")
         args = parser.parse_args()
 
         # setup
         RegisterService.setup(
-            email=args["email"], name=args["name"], password=args["password"], ip_address=extract_remote_ip(request)
+            email=args["email"],
+            name=args["name"],
+            password=args["password"],
+            ip_address=extract_remote_ip(request),
+            department=args.get("department"),
         )
 
         return {"result": "success"}, 201

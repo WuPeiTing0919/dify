@@ -7,6 +7,8 @@ const translation = {
   passwordPlaceholder: '輸入密碼',
   name: '使用者名稱',
   namePlaceholder: '輸入使用者名稱',
+  department: '部門',
+  departmentPlaceholder: '輸入所屬部門（可選）',
   forget: '忘記密碼？',
   signBtn: '登入',
   installBtn: '設定',

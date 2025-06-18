@@ -7,6 +7,8 @@ const translation = {
   passwordPlaceholder: '输入密码',
   name: '用户名',
   namePlaceholder: '输入用户名',
+  department: '部门',
+  departmentPlaceholder: '输入所属部门（可选）',
   forget: '忘记密码？',
   signBtn: '登录',
   continueWithCode: '发送验证码',
