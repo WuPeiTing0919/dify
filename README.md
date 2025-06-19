@@ -110,6 +110,7 @@ All of Dify's offerings come with corresponding APIs, so you could effortlessly 
 **8. Department-based permissions**:
 Manage app visibility per department and restrict access so that teams only see relevant applications. Specify a department when creating or inviting users so apps can be filtered automatically.
 
+
 ## Feature Comparison
 
 <table style="width: 100%;">
