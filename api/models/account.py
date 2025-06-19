@@ -105,6 +105,7 @@ class Account(UserMixin, Base):
     def init_on_load(self):
         self.role: Optional[TenantAccountRole] = None
         self._current_tenant: Optional[Tenant] = None
+        self._current_department: Optional[str] = None
 
     @property
     def is_password_set(self):
@@ -120,6 +121,7 @@ class Account(UserMixin, Base):
         if ta:
             self.role = TenantAccountRole(ta.role)
             self._current_tenant = tenant
+            self._current_department = ta.department
             return
         self._current_tenant = None
 
@@ -145,10 +147,15 @@ class Account(UserMixin, Base):
         tenant, join = tenant_account_join
         self.role = join.role
         self._current_tenant = tenant
+        self._current_department = join.department
 
     @property
     def current_role(self):
         return self.role
+
+    @property
+    def current_department(self) -> str | None:
+        return self._current_department
 
     def get_status(self) -> AccountStatus:
         status_str = self.status
@@ -235,6 +242,7 @@ class TenantAccountJoin(Base):
     account_id = db.Column(StringUUID, nullable=False)
     current = db.Column(db.Boolean, nullable=False, server_default=db.text("false"))
     role = db.Column(db.String(16), nullable=False, server_default="normal")
+    department = db.Column(db.String(255), nullable=True)
     invited_by = db.Column(StringUUID, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, server_default=func.current_timestamp())
     updated_at = db.Column(db.DateTime, nullable=False, server_default=func.current_timestamp())

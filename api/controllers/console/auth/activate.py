@@ -9,7 +9,8 @@ from controllers.console.error import AlreadyActivateError
 from extensions.ext_database import db
 from libs.helper import StrLen, email, extract_remote_ip, timezone
 from models.account import AccountStatus
-from services.account_service import AccountService, RegisterService
+from services.account_service import AccountService, RegisterService, TenantService
+from models.account import TenantAccountJoin
 
 
 class ActivateCheckApi(Resource):
@@ -50,6 +51,7 @@ class ActivateApi(Resource):
             "interface_language", type=supported_language, required=True, nullable=False, location="json"
         )
         parser.add_argument("timezone", type=timezone, required=True, nullable=False, location="json")
+        parser.add_argument("department", type=str, required=False, location="json")
         args = parser.parse_args()
 
         invitation = RegisterService.get_invitation_if_token_valid(args["workspace_id"], args["email"], args["token"])
@@ -66,6 +68,18 @@ class ActivateApi(Resource):
         account.interface_theme = "light"
         account.status = AccountStatus.ACTIVE.value
         account.initialized_at = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
+
+        department = args.get("department")
+        tenant = invitation.get("tenant")
+        if tenant and department is not None:
+            join = (
+                db.session.query(TenantAccountJoin)
+                .filter_by(tenant_id=tenant.id, account_id=account.id)
+                .first()
+            )
+            if join:
+                join.department = department
+
         db.session.commit()
 
         token_pair = AccountService.login(account, ip_address=extract_remote_ip(request))
