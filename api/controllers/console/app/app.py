@@ -156,6 +156,7 @@ class AppApi(Resource):
         parser.add_argument("icon", type=str, location="json")
         parser.add_argument("icon_background", type=str, location="json")
         parser.add_argument("use_icon_as_answer_icon", type=bool, location="json")
+        parser.add_argument("department", type=str, location="json")
         args = parser.parse_args()
 
         app_service = AppService()

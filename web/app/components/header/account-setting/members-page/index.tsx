@@ -111,12 +111,13 @@ const MembersPage = () => {
           </Button>
         </div>
         <div className='overflow-visible lg:overflow-visible'>
-          <div className='flex min-w-[480px] items-center border-b border-divider-regular py-[7px]'>
+          <div className='flex min-w-[600px] items-center border-b border-divider-regular py-[7px]'>
             <div className='system-xs-medium-uppercase grow px-3 text-text-tertiary'>{t('common.members.name')}</div>
             <div className='system-xs-medium-uppercase w-[104px] shrink-0 text-text-tertiary'>{t('common.members.lastActive')}</div>
+            <div className='system-xs-medium-uppercase w-[120px] shrink-0 px-3 text-text-tertiary'>{t('common.members.department')}</div>
             <div className='system-xs-medium-uppercase w-[96px] shrink-0 px-3 text-text-tertiary'>{t('common.members.role')}</div>
           </div>
-          <div className='relative min-w-[480px]'>
+          <div className='relative min-w-[600px]'>
             {
               accounts.map(account => (
                 <div key={account.id} className='flex border-b border-divider-subtle'>
@@ -132,6 +133,7 @@ const MembersPage = () => {
                     </div>
                   </div>
                   <div className='system-sm-regular flex w-[104px] shrink-0 items-center py-2 text-text-secondary'>{dayjs(Number((account.last_active_at || account.created_at)) * 1000).locale(locale === 'zh-Hans' ? 'zh-cn' : 'en').fromNow()}</div>
+                  <div className='system-sm-regular flex w-[120px] shrink-0 items-center px-3 text-text-secondary'>{account.department || '-'}</div>
                   <div className='flex w-[96px] shrink-0 items-center'>
                     {
                       isCurrentWorkspaceOwner && account.role !== 'owner'
