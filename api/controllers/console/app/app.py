@@ -69,7 +69,12 @@ class AppListApi(Resource):
 
         # get app list
         app_service = AppService()
-        app_pagination = app_service.get_paginate_apps(current_user.id, current_user.current_tenant_id, args)
+        app_pagination = app_service.get_paginate_apps(
+            current_user.id,
+            current_user.current_tenant_id,
+            args,
+            department=current_user.current_department,
+        )
         if not app_pagination:
             return {"data": [], "total": 0, "page": 1, "limit": 20, "has_more": False}
 
@@ -151,6 +156,7 @@ class AppApi(Resource):
         parser.add_argument("icon", type=str, location="json")
         parser.add_argument("icon_background", type=str, location="json")
         parser.add_argument("use_icon_as_answer_icon", type=bool, location="json")
+        parser.add_argument("department", type=str, location="json")
         args = parser.parse_args()
 
         app_service = AppService()

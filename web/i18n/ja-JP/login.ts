@@ -7,6 +7,8 @@ const translation = {
   passwordPlaceholder: 'パスワードを入力してください',
   name: 'ユーザー名',
   namePlaceholder: 'ユーザー名を入力してください',
+  department: '部署',
+  departmentPlaceholder: '部署を入力してください（任意）',
   forget: 'パスワードをお忘れですか？',
   signBtn: 'サインイン',
   sso: 'SSO に続ける',

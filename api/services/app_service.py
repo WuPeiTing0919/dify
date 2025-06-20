@@ -5,6 +5,7 @@ from typing import Optional, cast
 
 from flask_login import current_user
 from flask_sqlalchemy.pagination import Pagination
+import sqlalchemy as sa
 
 from configs import dify_config
 from constants.model_template import default_app_templates
@@ -27,7 +28,13 @@ from tasks.remove_app_and_related_data_task import remove_app_and_related_data_t
 
 
 class AppService:
-    def get_paginate_apps(self, user_id: str, tenant_id: str, args: dict) -> Pagination | None:
+    def get_paginate_apps(
+        self,
+        user_id: str,
+        tenant_id: str,
+        args: dict,
+        department: str | None = None,
+    ) -> Pagination | None:
         """
         Get app list with pagination
         :param user_id: user id
@@ -36,6 +43,10 @@ class AppService:
         :return:
         """
         filters = [App.tenant_id == tenant_id, App.is_universal == False]
+        if department:
+            filters.append(
+                sa.or_(App.department.is_(None), App.department == department)
+            )
 
         if args["mode"] == "workflow":
             filters.append(App.mode == AppMode.WORKFLOW.value)
@@ -135,6 +146,7 @@ class AppService:
         app.icon = args["icon"]
         app.icon_background = args["icon_background"]
         app.tenant_id = tenant_id
+        app.department = account.current_department
         app.api_rph = args.get("api_rph", 0)
         app.api_rpm = args.get("api_rpm", 0)
         app.created_by = account.id
@@ -235,6 +247,8 @@ class AppService:
         app.icon = args.get("icon")
         app.icon_background = args.get("icon_background")
         app.use_icon_as_answer_icon = args.get("use_icon_as_answer_icon", False)
+        if "department" in args:
+            app.department = args.get("department")
         app.updated_by = current_user.id
         app.updated_at = datetime.now(UTC).replace(tzinfo=None)
         db.session.commit()

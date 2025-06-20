@@ -7,6 +7,8 @@ const translation = {
   passwordPlaceholder: 'Your password',
   name: 'Username',
   namePlaceholder: 'Your username',
+  department: 'Department',
+  departmentPlaceholder: 'Your department (optional)',
   forget: 'Forgot your password?',
   signBtn: 'Sign in',
   continueWithCode: 'Continue With Code',

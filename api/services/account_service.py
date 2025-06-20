@@ -247,14 +247,20 @@ class AccountService:
 
     @staticmethod
     def create_account_and_tenant(
-        email: str, name: str, interface_language: str, password: Optional[str] = None
+        email: str,
+        name: str,
+        interface_language: str,
+        password: Optional[str] = None,
+        department: str | None = None,
     ) -> Account:
         """create account"""
         account = AccountService.create_account(
             email=email, name=name, interface_language=interface_language, password=password
         )
 
-        TenantService.create_owner_tenant_if_not_exist(account=account)
+        TenantService.create_owner_tenant_if_not_exist(
+            account=account, department=department
+        )
 
         return account
 
@@ -610,7 +616,10 @@ class TenantService:
 
     @staticmethod
     def create_owner_tenant_if_not_exist(
-        account: Account, name: Optional[str] = None, is_setup: Optional[bool] = False
+        account: Account,
+        name: Optional[str] = None,
+        is_setup: Optional[bool] = False,
+        department: str | None = None,
     ):
         """Check if user have a workspace or not"""
         available_ta = (
@@ -634,14 +643,26 @@ class TenantService:
         if name:
             tenant = TenantService.create_tenant(name=name, is_setup=is_setup)
         else:
-            tenant = TenantService.create_tenant(name=f"{account.name}'s Workspace", is_setup=is_setup)
-        TenantService.create_tenant_member(tenant, account, role="owner")
+            tenant = TenantService.create_tenant(
+                name=f"{account.name}'s Workspace", is_setup=is_setup
+            )
+        TenantService.create_tenant_member(
+            tenant,
+            account,
+            role="owner",
+            department=department,
+        )
         account.current_tenant = tenant
         db.session.commit()
         tenant_was_created.send(tenant)
 
     @staticmethod
-    def create_tenant_member(tenant: Tenant, account: Account, role: str = "normal") -> TenantAccountJoin:
+    def create_tenant_member(
+        tenant: Tenant,
+        account: Account,
+        role: str = "normal",
+        department: str | None = None,
+    ) -> TenantAccountJoin:
         """Create tenant member"""
         if role == TenantAccountRole.OWNER.value:
             if TenantService.has_roles(tenant, [TenantAccountRole.OWNER]):
@@ -651,8 +672,15 @@ class TenantService:
         ta = db.session.query(TenantAccountJoin).filter_by(tenant_id=tenant.id, account_id=account.id).first()
         if ta:
             ta.role = role
+            if department is not None:
+                ta.department = department
         else:
-            ta = TenantAccountJoin(tenant_id=tenant.id, account_id=account.id, role=role)
+            ta = TenantAccountJoin(
+                tenant_id=tenant.id,
+                account_id=account.id,
+                role=role,
+                department=department,
+            )
             db.session.add(ta)
 
         db.session.commit()
@@ -716,7 +744,11 @@ class TenantService:
     def get_tenant_members(tenant: Tenant) -> list[Account]:
         """Get tenant members"""
         query = (
-            db.session.query(Account, TenantAccountJoin.role)
+            db.session.query(
+                Account,
+                TenantAccountJoin.role,
+                TenantAccountJoin.department,
+            )
             .select_from(Account)
             .join(TenantAccountJoin, Account.id == TenantAccountJoin.account_id)
             .filter(TenantAccountJoin.tenant_id == tenant.id)
@@ -725,8 +757,9 @@ class TenantService:
         # Initialize an empty list to store the updated accounts
         updated_accounts = []
 
-        for account, role in query:
+        for account, role, department in query:
             account.role = role
+            account.department = department
             updated_accounts.append(account)
 
         return updated_accounts
@@ -844,6 +877,25 @@ class TenantService:
         db.session.commit()
 
     @staticmethod
+    def update_member_department(
+        tenant: Tenant, member: Account, new_department: str | None, operator: Account
+    ) -> None:
+        """Update member department"""
+        TenantService.check_member_permission(tenant, operator, member, "update")
+
+        ta = (
+            db.session.query(TenantAccountJoin)
+            .filter_by(tenant_id=tenant.id, account_id=member.id)
+            .first()
+        )
+
+        if not ta:
+            raise MemberNotInTenantError("Member not in tenant.")
+
+        ta.department = new_department
+        db.session.commit()
+
+    @staticmethod
     def dissolve_tenant(tenant: Tenant, operator: Account) -> None:
         """Dissolve tenant"""
         if not TenantService.check_member_permission(tenant, operator, operator, "remove"):
@@ -865,7 +917,14 @@ class RegisterService:
         return f"member_invite:token:{token}"
 
     @classmethod
-    def setup(cls, email: str, name: str, password: str, ip_address: str) -> None:
+    def setup(
+        cls,
+        email: str,
+        name: str,
+        password: str,
+        ip_address: str,
+        department: str | None = None,
+    ) -> None:
         """
         Setup dify
 
@@ -887,7 +946,9 @@ class RegisterService:
             account.last_login_ip = ip_address
             account.initialized_at = datetime.now(UTC).replace(tzinfo=None)
 
-            TenantService.create_owner_tenant_if_not_exist(account=account, is_setup=True)
+            TenantService.create_owner_tenant_if_not_exist(
+                account=account, is_setup=True, department=department
+            )
 
             dify_setup = DifySetup(version=dify_config.CURRENT_VERSION)
             db.session.add(dify_setup)
@@ -914,6 +975,7 @@ class RegisterService:
         status: Optional[AccountStatus] = None,
         is_setup: Optional[bool] = False,
         create_workspace_required: Optional[bool] = True,
+        department: str | None = None,
     ) -> Account:
         db.session.begin_nested()
         """Register account"""
@@ -937,7 +999,12 @@ class RegisterService:
                 and FeatureService.get_system_features().license.workspaces.is_available()
             ):
                 tenant = TenantService.create_tenant(f"{account.name}'s Workspace")
-                TenantService.create_tenant_member(tenant, account, role="owner")
+                TenantService.create_tenant_member(
+                    tenant,
+                    account,
+                    role="owner",
+                    department=department,
+                )
                 account.current_tenant = tenant
                 tenant_was_created.send(tenant)
 

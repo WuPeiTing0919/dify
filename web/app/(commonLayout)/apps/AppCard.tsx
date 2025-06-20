@@ -334,6 +334,12 @@ const AppCard = ({ app, onRefresh }: AppCardProps) => {
               <div className='truncate' title={app.author_name}>{app.author_name}</div>
               <div>·</div>
               <div className='truncate'>{EditTimeText}</div>
+              {app.department && (
+                <>
+                  <div>·</div>
+                  <div className='truncate' title={app.department}>{app.department}</div>
+                </>
+              )}
             </div>
           </div>
           <div className='flex h-5 w-5 shrink-0 items-center justify-center'>

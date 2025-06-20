@@ -143,6 +143,31 @@ class MemberUpdateRoleApi(Resource):
         return {"result": "success"}
 
 
+class MemberUpdateDepartmentApi(Resource):
+    """Update member department."""
+
+    @setup_required
+    @login_required
+    @account_initialization_required
+    def put(self, member_id):
+        parser = reqparse.RequestParser()
+        parser.add_argument("department", type=str, required=False, location="json")
+        args = parser.parse_args()
+
+        member = db.session.get(Account, str(member_id))
+        if not member:
+            abort(404)
+
+        try:
+            TenantService.update_member_department(
+                current_user.current_tenant, member, args.get("department"), current_user
+            )
+        except Exception as e:
+            raise ValueError(str(e))
+
+        return {"result": "success"}
+
+
 class DatasetOperatorMemberListApi(Resource):
     """List all members of current tenant."""
 
@@ -159,4 +184,5 @@ api.add_resource(MemberListApi, "/workspaces/current/members")
 api.add_resource(MemberInviteEmailApi, "/workspaces/current/members/invite-email")
 api.add_resource(MemberCancelInviteApi, "/workspaces/current/members/<uuid:member_id>")
 api.add_resource(MemberUpdateRoleApi, "/workspaces/current/members/<uuid:member_id>/update-role")
+api.add_resource(MemberUpdateDepartmentApi, "/workspaces/current/members/<uuid:member_id>/department")
 api.add_resource(DatasetOperatorMemberListApi, "/workspaces/current/dataset-operators")

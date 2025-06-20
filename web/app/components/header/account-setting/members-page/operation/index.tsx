@@ -7,7 +7,7 @@ import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { useProviderContext } from '@/context/provider-context'
 import cn from '@/utils/classnames'
 import type { Member } from '@/models/common'
-import { deleteMemberOrCancelInvitation, updateMemberRole } from '@/service/common'
+import { deleteMemberOrCancelInvitation, updateMemberRole, updateMemberDepartment } from '@/service/common'
 import { ToastContext } from '@/app/components/base/toast'
 
 type IOperationProps = {
@@ -70,6 +70,21 @@ const Operation = ({
 
     }
   }
+  const handleUpdateMemberDepartment = async () => {
+    const department = window.prompt(t('login.department'), member.department || '')
+    if (department === null)
+      return
+    try {
+      await updateMemberDepartment({
+        url: `/workspaces/current/members/${member.id}/department`,
+        body: { department: department || null },
+      })
+      onOperate()
+      notify({ type: 'success', message: t('common.actionMsg.modifiedSuccessfully') })
+    }
+    catch {
+    }
+  }
 
   return (
     <Menu as="div" className="relative h-full w-full">
@@ -110,6 +125,12 @@ const Operation = ({
                       </MenuItem>
                     ))
                   }
+                  <MenuItem>
+                    <div className='flex cursor-pointer rounded-lg px-3 py-2 hover:bg-state-base-hover' onClick={handleUpdateMemberDepartment}>
+                      <div className='mr-1 mt-[2px] h-4 w-4 text-text-accent' />
+                      <div className='system-sm-semibold whitespace-nowrap text-text-secondary'>{t('common.members.setDepartment')}</div>
+                    </div>
+                  </MenuItem>
                 </div>
                 <MenuItem>
                   <div className='border-t border-divider-subtle p-1'>

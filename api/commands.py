@@ -655,8 +655,9 @@ def create_tenant(email: str, language: Optional[str] = None, name: Optional[str
         password=new_password,
         language=language,
         create_workspace_required=False,
+        department=None,
     )
-    TenantService.create_owner_tenant_if_not_exist(account, name)
+    TenantService.create_owner_tenant_if_not_exist(account, name, department=None)
 
     click.echo(
         click.style(
