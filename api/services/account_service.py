@@ -744,7 +744,11 @@ class TenantService:
     def get_tenant_members(tenant: Tenant) -> list[Account]:
         """Get tenant members"""
         query = (
-            db.session.query(Account, TenantAccountJoin.role)
+            db.session.query(
+                Account,
+                TenantAccountJoin.role,
+                TenantAccountJoin.department,
+            )
             .select_from(Account)
             .join(TenantAccountJoin, Account.id == TenantAccountJoin.account_id)
             .filter(TenantAccountJoin.tenant_id == tenant.id)
@@ -753,8 +757,9 @@ class TenantService:
         # Initialize an empty list to store the updated accounts
         updated_accounts = []
 
-        for account, role in query:
+        for account, role, department in query:
             account.role = role
+            account.department = department
             updated_accounts.append(account)
 
         return updated_accounts
@@ -869,6 +874,25 @@ class TenantService:
 
         # Update the role of the target member
         target_member_join.role = new_role
+        db.session.commit()
+
+    @staticmethod
+    def update_member_department(
+        tenant: Tenant, member: Account, new_department: str | None, operator: Account
+    ) -> None:
+        """Update member department"""
+        TenantService.check_member_permission(tenant, operator, member, "update")
+
+        ta = (
+            db.session.query(TenantAccountJoin)
+            .filter_by(tenant_id=tenant.id, account_id=member.id)
+            .first()
+        )
+
+        if not ta:
+            raise MemberNotInTenantError("Member not in tenant.")
+
+        ta.department = new_department
         db.session.commit()
 
     @staticmethod

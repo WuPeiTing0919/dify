@@ -29,6 +29,7 @@ account_with_role_fields = {
     "last_active_at": TimestampField,
     "created_at": TimestampField,
     "role": fields.String,
+    "department": fields.String,
     "status": fields.String,
 }
 

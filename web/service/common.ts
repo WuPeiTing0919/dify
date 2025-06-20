@@ -127,6 +127,10 @@ export const updateMemberRole: Fetcher<CommonResponse, { url: string; body: Reco
   return put<CommonResponse>(url, { body })
 }
 
+export const updateMemberDepartment: Fetcher<CommonResponse, { url: string; body: Record<string, any> }> = ({ url, body }) => {
+  return put<CommonResponse>(url, { body })
+}
+
 export const deleteMemberOrCancelInvitation: Fetcher<CommonResponse, { url: string }> = ({ url }) => {
   return del<CommonResponse>(url)
 }
