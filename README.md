@@ -108,6 +108,7 @@ Monitor and analyze application logs and performance over time. You could contin
 All of Dify's offerings come with corresponding APIs, so you could effortlessly integrate Dify into your own business logic.
 
 **8. Department-based permissions**:
+
 Manage app visibility per department and restrict access so that teams only see relevant applications. Specify a department when creating or inviting users so apps can be filtered automatically.
 Administrators can later change a member's department or assign apps to different departments to fine‑tune visibility.
 
