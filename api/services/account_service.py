@@ -1026,12 +1026,25 @@ class RegisterService:
 
     @classmethod
     def invite_new_member(
-        cls, tenant: Tenant, email: str, language: str, role: str = "normal", inviter: Account | None = None
+        cls,
+        tenant: Tenant,
+        email: str,
+        language: str,
+        role: str = "normal",
+        inviter: Account | None = None,
+        department: str | None = None,
     ) -> str:
+        """Invite new member to tenant.
+
+        :param tenant: workspace to invite to
+        :param email: invitee email address
+        :param language: language for invitation email
+        :param role: role of invited user
+        :param inviter: the account performing the invitation
+        :param department: optional department for the member
+        """
         if not inviter:
             raise ValueError("Inviter is required")
-
-        """Invite new member"""
         with Session(db.engine) as session:
             account = session.query(Account).filter_by(email=email).first()
 
@@ -1040,17 +1053,31 @@ class RegisterService:
             name = email.split("@")[0]
 
             account = cls.register(
-                email=email, name=name, language=language, status=AccountStatus.PENDING, is_setup=True
+                email=email,
+                name=name,
+                language=language,
+                status=AccountStatus.PENDING,
+                is_setup=True,
             )
             # Create new tenant member for invited tenant
-            TenantService.create_tenant_member(tenant, account, role)
+            TenantService.create_tenant_member(
+                tenant,
+                account,
+                role,
+                department=department,
+            )
             TenantService.switch_tenant(account, tenant.id)
         else:
             TenantService.check_member_permission(tenant, inviter, account, "add")
             ta = db.session.query(TenantAccountJoin).filter_by(tenant_id=tenant.id, account_id=account.id).first()
 
             if not ta:
-                TenantService.create_tenant_member(tenant, account, role)
+                TenantService.create_tenant_member(
+                    tenant,
+                    account,
+                    role,
+                    department=department,
+                )
 
             # Support resend invitation email when the account is pending status
             if account.status != AccountStatus.PENDING.value:

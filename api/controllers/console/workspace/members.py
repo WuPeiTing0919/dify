@@ -45,11 +45,13 @@ class MemberInviteEmailApi(Resource):
         parser.add_argument("emails", type=str, required=True, location="json", action="append")
         parser.add_argument("role", type=str, required=True, default="admin", location="json")
         parser.add_argument("language", type=str, required=False, location="json")
+        parser.add_argument("department", type=str, required=False, location="json")
         args = parser.parse_args()
 
         invitee_emails = args["emails"]
         invitee_role = args["role"]
         interface_language = args["language"]
+        department = args.get("department")
         if not TenantAccountRole.is_non_owner_role(invitee_role):
             return {"code": "invalid-role", "message": "Invalid role"}, 400
 
@@ -65,7 +67,12 @@ class MemberInviteEmailApi(Resource):
         for invitee_email in invitee_emails:
             try:
                 token = RegisterService.invite_new_member(
-                    inviter.current_tenant, invitee_email, interface_language, role=invitee_role, inviter=inviter
+                    inviter.current_tenant,
+                    invitee_email,
+                    interface_language,
+                    role=invitee_role,
+                    inviter=inviter,
+                    department=department,
                 )
                 encoded_invitee_email = parse.quote(invitee_email)
                 invitation_results.append(
